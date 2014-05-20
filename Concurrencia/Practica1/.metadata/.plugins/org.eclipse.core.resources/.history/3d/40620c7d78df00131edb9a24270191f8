@@ -1,0 +1,95 @@
+class Robots {
+  public static final int N_ROBOTS = 10;
+  public static final int N_NAVES = 3;
+  public static final int MAX_PESO_EN_NAVE = 100;
+  public static final int PESO_EN_VACIO = 350;
+
+  // Atributos que representan el peso de cada robot, quÃ© robots
+  // hay en cada nave y quÃ© robot hay en cada pasillo de entrada.
+  private static int ridWeight[] = new int[N_ROBOTS];
+  private static int ridInCorridor[] = new int[N_NAVES - 1];
+  // 0 means corridor from shed 0 to shed 1, 
+  // 1 means corridor from shed 1 to shed 2, and so on and so forth
+  private static boolean[][] sheds = new boolean[N_NAVES][N_ROBOTS];
+
+  private static void insertRidInShed(int nShed, int nRid)
+  {
+      sheds[nShed][nRid] = true;
+  }
+  private static void removeRidFromShed(int nShed, int nRid)
+  {
+      sheds[nShed][nRid] = false;
+  }
+  private static boolean isRidInShed(int nShed, int nRid)
+  {
+    return sheds[nShed][nRid];
+  }
+
+  private static boolean areValidNidRid(int nid, int rid)
+  {
+  	return  (0 <= nid && nid < N_NAVES) && 
+  	        (0 <= rid && rid < N_ROBOTS);
+
+  }
+  
+  private static String errorInputParams = " ERROR en parÃ¡metros";
+
+  /* El robot rid entra en el pasillo de la nave nid sin comprobar si
+   * se encuentra ocupado. Si el robot no tiene acceso a dicho pasillo
+   * (ej. no se encuentra en la nave nid - 1) entonces la orden es
+   * ignorada y retorna inmediatamente.  Esta orden termina de
+   * ejecutarse cuando el robot ha terminado de entrar en el
+   * pasillo. */
+  public static void entrarEnPasillo(int rid, int nid) {
+    // Simular la entrada en un pasillo. CRASH si hay otro proceso
+    if(!areValidNidRid(nid, rid) && nid != 0) // Special case, nid 0 not allowed
+    	System.out.println("<entrarEnPasillo>" + errorInputParams);
+    else{
+        // Check if the robot has access to this corridor
+        if(isRidInShed(nid - 1, rid)){
+            // Robot moves
+            removeRidFromShed(nid - 1, rid);
+            ridInCorridor[nid - 1] = rid; // XXX No checking!
+            System.out.println("Robot " + rid + " en pasillo (" + (nid - 1) + "," + nid + ")");
+        }
+    }
+  }
+  /* El robot rid entra en la nave nid sin comprobar sobrepeso. Si el
+   * robot no estaba en el pasillo de entrada de la nave nid entonces
+   * la orden es ignorada y retorna inmediatamente. Esta orden termina
+   * de ejecutarse cuando el robot ha accedido a la nave nid. */
+  public static void entrarEnNave(int rid, int nid) {
+    // Simular la entrada en la nave con el peso que llevara el
+    // robot. CRASH si sobrepeso
+    if(!areValidNidRid(nid, rid))
+    	System.out.println("<entrarEnNave>" + errorInputParams);
+    else if(ridInCorridor[nid - 1] == rid)
+    {
+        insertRidInShed(nid, rid); // No checking of weight!
+        ridInCorridor[nid - 1] = -1; // No robot
+        System.out.println("Robot " + rid + " en nave " + nid);
+    }
+  }
+  /* El robot rid realiza la carga programada en la nave nid y
+   * devuelve el peso total del robot (que siempre es inferior a
+   * MAX_PESO_EN_NAVE). Si el robot no estaba en la nave nid entonces
+   * la orden es ignorada y retorna inmediatamente.  Esta orden
+   * termina de ejecutarse cuando el robot tiene toda la carga y se
+   * posiciona en una zona segura (el incremento de peso no supone
+   * problema para el suelo de la nave). */
+  public static int cargar(int rid, int nid) {
+    // Simular la carga y devolver peso incrementado.
+    int weightLoaded = 350;
+    if(!areValidNidRid(nid, rid))
+        System.out.println("<cargar>" + errorInputParams);
+    else if(isRidInShed(nid, rid)){
+        System.out.println("Cargando robot " + rid + " en nave " + nid + "...");
+        ridWeight[rid] = weightLoaded;
+        System.out.println("Carga realizada y robot posicionado en zona segura.");
+    }else
+        weightLoaded = 0;
+        
+    return weightLoaded;
+  }
+
+} 
